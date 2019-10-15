@@ -5,71 +5,92 @@ use GuzzleHttp\Client;
 
 trait HttpClient{
     
+    public $xRateLimitRemaining;
+    public $xRateLimitReset;
     public $httpStatus;
     public $httpMsg;
-    public $httpBody = null;
+    public $data = null;
     
-    public function postCall($url,$key,$data)
+    public function postCall($data)
     {
         $client = new Client();
         try{
-            $response = $client->post($url,[
+            $response = $client->post($this->_buildUrl(),[
                 'headers' => [
                     'Content-Type' => 'application/json; charset=utf-8',
-                    'X-Clickmeter-Authkey' => $key
+                    'X-Clickmeter-Authkey' => $this->apiKey
                 ],
-                'body' => \GuzzleHttp\json_encode($data),
+                'body' => json_encode($data),
             ]);
             
+            $this->xRateLimitRemaining = $response->getHeader('X-Rate-Limit-Remaining');
+            $this->xRateLimitReset = $response->getHeader('X-Rate-Limit-Reset');
             $this->httpStatus = $response->getStatusCode();
             $this->httpMsg = $response->getReasonPhrase();
-            $this->httpBody = $response->getBody();
+            $this->data = $response->getBody();
             $this->_formatBody();
         }catch (\Exception $e ){
             
             $this->httpStatus = 404;
             $this->httpMsg = $e->getMessage();
         }
-        return $this;
+        return $this->_sanitiseReturnResult();
     }
     
-    public function getCall($url,$key,$query = false)
+    public function getCall($query = [])
     {
         $client = new Client();
         
         try{
-            $response = $client->get($url,[
+            $response = $client->get($this->_buildUrl(),[
                 'headers' => [
                     'Content-Type' => 'application/json; charset=utf-8',
-                    'X-Clickmeter-Authkey' => $key
+                    'X-Clickmeter-Authkey' => $this->apiKey
                 ],
                 'query' => $query
             ]);
+            $this->xRateLimitRemaining = $response->getHeader('X-Rate-Limit-Remaining');
+            $this->xRateLimitReset = $response->getHeader('X-Rate-Limit-Reset');
             $this->httpStatus = $response->getStatusCode();
             $this->httpMsg = $response->getReasonPhrase();
-            $this->httpBody = $response->getBody();
+            $this->data = $response->getBody();
             $this->_formatBody();
         }catch (\Exception $e ){
             
             $this->httpStatus = 404;
             $this->httpMsg = $e->getMessage();
         }
-        return $this;
+        return $this->_sanitiseReturnResult();
         
     }
     
+    
     protected function _formatBody(){
-        if ($this->httpBody){
-            if (isJson($this->httpBody)){
-                $this->httpBody = \GuzzleHttp\json_decode($this->httpBody);
+        if ($this->data){
+            if ($this->_isJson($this->data)){
+                $this->data = json_decode($this->data);
             }
-            if ($this->httpBody){
-                $this->httpBody = objectToArray($this->httpBody);
+            if ($this->data){
+                $this->data = (array)$this->data;
             }
         }
         
     }
-
+    
+    protected function _isJson($string) {
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE);
+    }
+    
+    protected function _buildUrl()
+    {
+        return $this->apiBase.''.$this->endPoint;
+    }
+    
+    public function _sanitiseReturnResult()
+    {
+        unset($this->apiKey);
+        return $this;
+        
+    }
 }
-
-

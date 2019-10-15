@@ -7,9 +7,9 @@ class ClickMeter
 {
     use HttpClient;
     
-    private $apiBase = 'http://apiv2.clickmeter.com';
-    private $apiKey;
-    private $endPoint;
+    protected $apiBase = 'http://apiv2.clickmeter.com';
+    protected $apiKey;
+    protected $endPoint;
     
     public function __construct($apiKey, $apiBase = false)
     {
@@ -21,15 +21,9 @@ class ClickMeter
     
     public function test()
     {
-        $this->endPoint = '/account';
-        return $this->getCall($this->_buildUrl(),$this->apiKey);
-        
+        $this->endPoint = '/account/plan';
+        return $this->getCall();
     }
     
-    //private function ===========================================
-    private function _buildUrl()
-    {
-        return $this->apiBase.''.$this->endPoint;
-    }
-
+    
 }
