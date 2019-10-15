@@ -1,0 +1,22 @@
+{
+  "name": "pdphilip/clickmeter-php-sdk",
+  "description": "PHP SDK for the Clickmeter.com API",
+  "type": "library",
+  "require": {
+    "php": ">=5.4.0",
+    "guzzlehttp/guzzle": "^5.3.3"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "David Philip",
+      "email": "pd.philip@gmail.com",
+      "homepage": "https://github.com/pdphilip"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "ClickMeterSDK\\": "src/"
+    }
+  }
+}
