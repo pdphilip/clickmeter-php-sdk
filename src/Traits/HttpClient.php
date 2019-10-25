@@ -37,6 +37,32 @@ trait HttpClient{
         return $this->_sanitiseReturnResult();
     }
     
+    public function patchCall($data)
+    {
+        $client = new Client();
+        try{
+            $response = $client->patch($this->_buildUrl(),[
+                'headers' => [
+                    'Content-Type' => 'application/json; charset=utf-8',
+                    'X-Clickmeter-Authkey' => $this->apiKey
+                ],
+                'body' => json_encode($data),
+            ]);
+            
+            $this->xRateLimitRemaining = $response->getHeader('X-Rate-Limit-Remaining');
+            $this->xRateLimitReset = $response->getHeader('X-Rate-Limit-Reset');
+            $this->httpStatus = $response->getStatusCode();
+            $this->httpMsg = $response->getReasonPhrase();
+            $this->data = $response->getBody();
+            $this->_formatBody();
+        }catch (\Exception $e ){
+            
+            $this->httpStatus = 404;
+            $this->httpMsg = $e->getMessage();
+        }
+        return $this->_sanitiseReturnResult();
+    }
+    
     public function getCall($query = [])
     {
         $client = new Client();
@@ -48,6 +74,32 @@ trait HttpClient{
                     'X-Clickmeter-Authkey' => $this->apiKey
                 ],
                 'query' => $query
+            ]);
+            $this->xRateLimitRemaining = $response->getHeader('X-Rate-Limit-Remaining');
+            $this->xRateLimitReset = $response->getHeader('X-Rate-Limit-Reset');
+            $this->httpStatus = $response->getStatusCode();
+            $this->httpMsg = $response->getReasonPhrase();
+            $this->data = $response->getBody();
+            $this->_formatBody();
+        }catch (\Exception $e ){
+            
+            $this->httpStatus = 404;
+            $this->httpMsg = $e->getMessage();
+        }
+        return $this->_sanitiseReturnResult();
+        
+    }
+    
+    public function deleteCall()
+    {
+        $client = new Client();
+        
+        try{
+            $response = $client->delete($this->_buildUrl(),[
+                'headers' => [
+                    'Content-Type' => 'application/json; charset=utf-8',
+                    'X-Clickmeter-Authkey' => $this->apiKey
+                ],
             ]);
             $this->xRateLimitRemaining = $response->getHeader('X-Rate-Limit-Remaining');
             $this->xRateLimitReset = $response->getHeader('X-Rate-Limit-Reset');
@@ -78,7 +130,10 @@ trait HttpClient{
     }
     
     protected function _isJson($string) {
-        json_decode($string);
+        if (is_array($string)){
+            return false;
+        }
+        json_decode($string,false);
         return (json_last_error() == JSON_ERROR_NONE);
     }
     
