@@ -236,12 +236,23 @@ class ClickMeter
         return $this->_returnResult();
     }
     
-    //Not working
-    public function getLinkClickData($linkId,$timeFrame = 'beginning',$query = [])
+    
+    public function getLinkClickData($linkId,$timeFrame = 'last180',$query = [])
     {
-        $query['type'] = 'browsers';
+        $query['type'] = 'destinations';
         $query['timeframe'] = $timeFrame;
-        $this->endPoint = '/datapoints/'.$linkId.'/reports/';
+        $query['datapoint'] = $linkId;
+        $this->endPoint = '/reports';
+        $this->getCall($query);
+        return $this->_returnResult();
+    }
+    
+    public function getLinkClickSteam($linkId,$filter = 'uniques',$pageSize = 500,$query = [])
+    {
+        $query['pageSize'] = $pageSize;
+        $query['datapoint'] = $linkId;
+        $query['filter'] = $filter;
+        $this->endPoint = '/clickstream';
         $this->getCall($query);
         return $this->_returnResult();
     }
@@ -256,6 +267,7 @@ class ClickMeter
     /*******************************
      ********  Reports  ********
      ******************************/
+    
     
     
     
